@@ -1,27 +1,13 @@
-import { useState } from 'react';
+import { db } from './firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
-export default function TransactionForm({ onAdd }) {
-  const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('');
-  const [type, setType] = useState('expense');
+const handleSubmit = async () => {
+  await addDoc(collection(db, "transactions"), {
+    type: "income",
+    amount: 500,
+    category: "Salary",
+    timestamp: new Date()
+  });
+};
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onAdd({ amount: parseFloat(amount), category, type, date: new Date() });
-    setAmount('');
-    setCategory('');
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="จำนวนเงิน" required />
-      <input type="text" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="หมวดหมู่" required />
-      <select value={type} onChange={(e) => setType(e.target.value)}>
-        <option value="expense">รายจ่าย</option>
-        <option value="income">รายรับ</option>
-      </select>
-      <button type="submit">บันทึก</button>
-    </form>
-  );
-}
 

@@ -15,6 +15,7 @@ export const auth = getAuth(app);
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
+
 export async function addTransaction(data) {
   await addDoc(collection(db, 'transactions'), data);
 }
