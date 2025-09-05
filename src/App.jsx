@@ -1,6 +1,6 @@
 import TransactionForm from './components/TransactionForm';
 import SummaryChart from './components/SummaryChart';
-import { addTransaction } from '../firebase';
+import { addTransaction } from './firebase';
 
 function App() {
   const handleAdd = async (data) => {
