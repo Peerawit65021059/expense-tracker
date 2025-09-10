@@ -2,8 +2,16 @@
   "name": "expense-tracker",
   "version": "1.0.0",
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "chart.js": "^4.5.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
     "firebase": "^12.2.1",
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.14.4",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.3.1",
@@ -25,5 +33,18 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "description": "",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Peerawit65021059/expense-tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Peerawit65021059/expense-tracker/issues"
+  },
+  "homepage": "https://github.com/Peerawit65021059/expense-tracker#readme"
 }

@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read and write their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Users can read and write their own transactions
+    match /transactions/{transactionId} {
+      allow read, write: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.userId;
+    }
+
+    // Users can read categories (read-only for everyone authenticated)
+    match /categories/{categoryId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Categories are managed by admin only
+    }
+
+    // Users can read and write their own budgets
+    match /budgets/{budgetId} {
+      allow read, write: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.userId;
+    }
+
+    // Users can read and write their own goals
+    match /goals/{goalId} {
+      allow read, write: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.auth.uid == request.resource.data.userId;
+    }
+
+    // Public read for app configuration
+    match /config/{configId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Admin functions (for future use)
+    match /admin/{document=**} {
+      allow read, write: if request.auth != null &&
+        request.auth.token.admin == true;
+    }
+  }
+}
