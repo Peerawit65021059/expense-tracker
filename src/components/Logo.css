@@ -1,0 +1,111 @@
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo.small {
+  gap: 8px;
+}
+
+.logo.small .logo-svg {
+  width: 40px;
+  height: 40px;
+}
+
+.logo.large {
+  gap: 16px;
+}
+
+.logo.large .logo-svg {
+  width: 80px;
+  height: 80px;
+}
+
+.logo-svg {
+  width: 60px;
+  height: 60px;
+  transition: transform 0.3s ease;
+}
+
+.logo-svg:hover {
+  transform: scale(1.05);
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.logo-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.5px;
+}
+
+.logo-subtitle {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.logo.small .logo-title {
+  font-size: 1.2rem;
+}
+
+.logo.small .logo-subtitle {
+  font-size: 0.8rem;
+}
+
+.logo.large .logo-title {
+  font-size: 2rem;
+}
+
+.logo.large .logo-subtitle {
+  font-size: 1.1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .logo {
+    gap: 10px;
+  }
+
+  .logo-svg {
+    width: 50px;
+    height: 50px;
+  }
+
+  .logo-title {
+    font-size: 1.3rem;
+  }
+
+  .logo-subtitle {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    gap: 8px;
+  }
+
+  .logo-svg {
+    width: 45px;
+    height: 45px;
+  }
+
+  .logo-title {
+    font-size: 1.2rem;
+  }
+
+  .logo-subtitle {
+    font-size: 0.8rem;
+  }
+}
