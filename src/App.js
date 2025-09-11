@@ -53,13 +53,13 @@ function App() {
   };
 
   const handleLogin = async (userData, token) => {
-    // Firebase auth state change will handle the rest
-    setCurrentView('dashboard');
+    // Auth state will be handled by onAuthStateChange
+    // No manual state setting needed
   };
 
   const handleRegister = async (userData, token) => {
-    // Firebase auth state change will handle the rest
-    setCurrentView('dashboard');
+    // Auth state will be handled by onAuthStateChange
+    // No manual state setting needed
   };
 
   const handleLogout = async () => {

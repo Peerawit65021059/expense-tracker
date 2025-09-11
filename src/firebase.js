@@ -1,7 +1,24 @@
+// Firebase Configuration
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, query, where, orderBy } from 'firebase/firestore';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from 'firebase/auth';
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  Timestamp
+} from 'firebase/firestore';
 
+// Firebase configuration
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -11,47 +28,17 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
-export const auth = getAuth(app);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-export const addTransaction = async (transaction, userId) => {
-  try {
-    await addDoc(collection(db, 'transactions'), {
-      ...transaction,
-      userId,
-      timestamp: new Date()
-    });
-  } catch (error) {
-    console.error('Error adding transaction:', error);
-    throw error;
-  }
-};
-
-export const getTransactions = async (userId) => {
-  try {
-    const q = query(
-      collection(db, 'transactions'),
-      where('userId', '==', userId),
-      orderBy('timestamp', 'desc')
-    );
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-  } catch (error) {
-    console.error('Error getting transactions:', error);
-    return [];
-  }
-};
-
+// Authentication functions
 export const loginUser = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return userCredential.user;
   } catch (error) {
-    console.error('Error logging in:', error);
     throw error;
   }
 };
@@ -59,13 +46,14 @@ export const loginUser = async (email, password) => {
 export const registerUser = async (email, password, displayName) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    // Update display name
-    await userCredential.user.updateProfile({
-      displayName: displayName
-    });
+    // Update display name if provided
+    if (displayName && userCredential.user) {
+      await userCredential.user.updateProfile({
+        displayName: displayName
+      });
+    }
     return userCredential.user;
   } catch (error) {
-    console.error('Error registering:', error);
     throw error;
   }
 };
@@ -74,7 +62,6 @@ export const logoutUser = async () => {
   try {
     await signOut(auth);
   } catch (error) {
-    console.error('Error logging out:', error);
     throw error;
   }
 };
@@ -86,3 +73,50 @@ export const getCurrentUser = () => {
 export const onAuthStateChange = (callback) => {
   return onAuthStateChanged(auth, callback);
 };
+
+// Firestore functions
+export const addTransaction = async (transaction, userId) => {
+  try {
+    const docRef = await addDoc(collection(db, 'transactions'), {
+      ...transaction,
+      userId: userId || auth.currentUser?.uid,
+      timestamp: Timestamp.now()
+    });
+    return { id: docRef.id, ...transaction };
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getTransactions = async (userId) => {
+  try {
+    const userIdToUse = userId || auth.currentUser?.uid;
+    if (!userIdToUse) {
+      return [];
+    }
+
+    const q = query(
+      collection(db, 'transactions'),
+      where('userId', '==', userIdToUse),
+      orderBy('timestamp', 'desc')
+    );
+
+    const querySnapshot = await getDocs(q);
+    const transactions = [];
+    querySnapshot.forEach((doc) => {
+      transactions.push({
+        id: doc.id,
+        ...doc.data(),
+        timestamp: doc.data().timestamp?.toDate?.() || new Date(doc.data().timestamp)
+      });
+    });
+
+    return transactions;
+  } catch (error) {
+    console.error('Error getting transactions:', error);
+    throw error;
+  }
+};
+
+// Export Firebase instances for compatibility
+export { auth, db };
