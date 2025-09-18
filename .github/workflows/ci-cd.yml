@@ -34,6 +34,18 @@ jobs:
       - name: Verify package.json
         run: cat package.json | grep -A 10 '"scripts"'
 
+      - name: Ensure public directory exists
+        run: |
+          ls -la
+          if [ ! -d "public" ]; then
+            echo "Public directory missing, creating..."
+            mkdir -p public
+            echo "<!DOCTYPE html><html><head><title>Expense Tracker</title></head><body><div id='root'></div></body></html>" > public/index.html
+          else
+            echo "Public directory exists"
+            ls -la public/
+          fi
+
       - name: Run linting
         run: npm run lint 2>/dev/null || echo "No lint script found"
 
@@ -164,6 +176,15 @@ jobs:
           cat package.json | grep -A 10 '"scripts"'
           npm ci
           npm run build
+
+      - name: Ensure public directory exists (production)
+        working-directory: expense-tracker
+        run: |
+          if [ ! -d "public" ]; then
+            echo "Public directory missing in production, creating..."
+            mkdir -p public
+            echo "<!DOCTYPE html><html><head><title>Expense Tracker</title></head><body><div id='root'></div></body></html>" > public/index.html
+          fi
 
       - name: Deploy to Firebase (Production)
         run: |
