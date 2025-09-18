@@ -35,7 +35,7 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EXPENSE_WALLET_82D9F }}
           projectId: expense-wallet-82d9f
           expires: 1d
-          target: temp-performance-check
+          channelId: temp-performance-check
 
       - name: Run Lighthouse audit
         uses: treosh/lighthouse-ci-action@v10
