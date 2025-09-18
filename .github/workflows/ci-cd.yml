@@ -83,6 +83,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify repository structure
+        run: |
+          pwd
+          ls -la
+          if [ -d "expense-tracker" ] && [ -d "functions" ]; then
+            echo "✅ expense-tracker and functions directories exist"
+          else
+            echo "❌ Required directories missing"
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -111,6 +124,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify repository structure
+        run: |
+          pwd
+          ls -la
+          if [ -d "expense-tracker" ]; then
+            echo "✅ expense-tracker directory exists"
+            ls -la expense-tracker/
+          else
+            echo "❌ expense-tracker directory missing"
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -175,6 +202,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify repository structure
+        run: |
+          pwd
+          ls -la
+          if [ -d "functions" ]; then
+            echo "✅ functions directory exists"
+            ls -la functions/
+          else
+            echo "❌ functions directory missing"
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
