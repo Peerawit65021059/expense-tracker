@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './App.css';
 import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
@@ -14,6 +14,23 @@ function App() {
   const [user, setUser] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Memoize expensive calculations
+  const { totalIncome, totalExpenses, balance } = useMemo(() => {
+    const income = transactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+    const expenses = transactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+    return {
+      totalIncome: income,
+      totalExpenses: expenses,
+      balance: income - expenses
+    };
+  }, [transactions]);
 
   // Check for existing authentication on app load
   useEffect(() => {
@@ -101,17 +118,6 @@ function App() {
     }
     return <Login onLogin={handleLogin} onSwitchToRegister={switchToRegister} />;
   }
-
-  // Show main dashboard
-  const totalIncome = transactions
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + (t.amount || 0), 0);
-
-  const totalExpenses = transactions
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + (t.amount || 0), 0);
-
-  const balance = totalIncome - totalExpenses;
 
   return (
     <div className="app">

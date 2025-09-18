@@ -29,6 +29,7 @@ jobs:
           npm run build
 
       - name: Deploy to temporary hosting
+        id: firebaseHostingDeploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
@@ -44,6 +45,7 @@ jobs:
             ${{ steps.firebaseHostingDeploy.outputs.details_url }}
           configPath: .lighthouserc.json
           uploadArtifacts: true
+          artifactName: lighthouse_results
           temporaryPublicStorage: true
 
       - name: Comment performance results
