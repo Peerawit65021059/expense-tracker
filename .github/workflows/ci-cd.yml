@@ -199,8 +199,10 @@ jobs:
 
       - name: Rollback deployment
         run: |
-          # Rollback to previous version if available
-          firebase hosting:rollback --project expense-wallet-82d9f
+          # Rollback is not available in Firebase Hosting
+          # Manual intervention required for rollback
+          echo "Deployment failed. Manual rollback may be required."
+          echo "Previous deployment can be restored from Firebase Console."
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
