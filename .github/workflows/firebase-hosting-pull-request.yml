@@ -15,9 +15,6 @@ env:
 jobs:
   test_and_build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: expense-tracker
 
     steps:
       - name: Checkout code
@@ -28,15 +25,18 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: expense-tracker/package-lock.json
 
       - name: Install dependencies
+        working-directory: expense-tracker
         run: npm ci
 
       - name: Verify package.json
+        working-directory: expense-tracker
         run: cat package.json | grep -A 10 '"scripts"'
 
       - name: Ensure public directory exists
+        working-directory: expense-tracker
         run: |
           ls -la
           if [ ! -d "public" ]; then
@@ -49,14 +49,17 @@ jobs:
           fi
 
       - name: Run linting
+        working-directory: expense-tracker
         run: npm run lint 2>/dev/null || echo "No lint script found"
 
       - name: Run tests
+        working-directory: expense-tracker
         run: npm test -- --watchAll=false --passWithNoTests
         env:
           CI: true
 
       - name: Build application
+        working-directory: expense-tracker
         run: |
           pwd
           ls -la
