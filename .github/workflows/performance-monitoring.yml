@@ -23,7 +23,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Build application
-        working-directory: expense-tracker
+        working-directory: .
         run: |
           npm ci
           npm run build
@@ -104,11 +104,11 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        working-directory: expense-tracker
+        working-directory: .
         run: npm ci
 
       - name: Build and analyze bundle
-        working-directory: expense-tracker
+        working-directory: .
         run: |
           npm run build
           npx webpack-bundle-analyzer build/static/js/*.js --mode static --report build/bundle-report.html 2>/dev/null || echo "Bundle analysis completed"
@@ -117,11 +117,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bundle-analysis
-          path: expense-tracker/build/bundle-report.html
+          path: build/bundle-report.html
           retention-days: 30
 
       - name: Check bundle size
-        working-directory: expense-tracker
+        working-directory: .
         run: |
           echo "📦 Bundle Size Analysis:" > bundle-size.txt
           find build/static/js -name "*.js" -exec ls -lh {} \; >> bundle-size.txt

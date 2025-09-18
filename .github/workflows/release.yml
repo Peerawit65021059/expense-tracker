@@ -55,7 +55,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Build application
-        working-directory: expense-tracker
+        working-directory: .
         run: |
           npm ci
           npm run build
@@ -66,12 +66,11 @@ jobs:
           tar -czf expense-tracker-source.tar.gz \
             --exclude='node_modules' \
             --exclude='.git' \
-            --exclude='expense-tracker/build' \
+            --exclude='build' \
             .
 
           # Create build archive
-          cd expense-tracker
-          tar -czf ../expense-tracker-build.tar.gz build/
+          tar -czf expense-tracker-build.tar.gz build/
 
       - name: Create GitHub Release
         uses: actions/create-release@v1

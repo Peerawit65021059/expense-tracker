@@ -32,7 +32,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies (Frontend)
-        working-directory: expense-tracker
+        working-directory: .
         run: npm ci
 
       - name: Install dependencies (Backend)
@@ -40,7 +40,7 @@ jobs:
         run: npm ci
 
       - name: Run npm audit (Frontend)
-        working-directory: expense-tracker
+        working-directory: .
         run: |
           npm audit --audit-level moderate --json > audit-frontend.json || true
           cat audit-frontend.json
@@ -54,8 +54,8 @@ jobs:
       - name: Check for security vulnerabilities
         run: |
           # Check frontend vulnerabilities
-          if [ -f "expense-tracker/audit-frontend.json" ]; then
-            VULN_COUNT_FRONTEND=$(jq '.metadata.vulnerabilities.total // 0' expense-tracker/audit-frontend.json)
+          if [ -f "audit-frontend.json" ]; then
+            VULN_COUNT_FRONTEND=$(jq '.metadata.vulnerabilities.total // 0' audit-frontend.json)
           else
             VULN_COUNT_FRONTEND=0
           fi
@@ -98,7 +98,7 @@ jobs:
           echo "🔍 Scanning for exposed secrets..."
 
           # Check for Firebase config in source files
-          if grep -r "FIREBASE_API_KEY\|FIREBASE_PROJECT_ID" expense-tracker/src/ --include="*.js" --include="*.jsx" --include="*.ts" --include="*.tsx"; then
+          if grep -r "FIREBASE_API_KEY\|FIREBASE_PROJECT_ID" src/ --include="*.js" --include="*.jsx" --include="*.ts" --include="*.tsx"; then
             echo "⚠️  Potential exposed Firebase config found in source files"
             echo "exposed_config=true" >> $GITHUB_OUTPUT
           else
@@ -147,7 +147,7 @@ jobs:
           name: security-scan-report
           path: |
             security-report.md
-            expense-tracker/audit-frontend.json
+            audit-frontend.json
             functions/audit-backend.json
           retention-days: 30
 
