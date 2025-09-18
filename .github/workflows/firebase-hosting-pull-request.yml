@@ -42,7 +42,9 @@ jobs:
           CI: true
 
       - name: Build application
-        run: npm run build
+        run: |
+          ls -la public/
+          npm run build
 
   build_and_preview:
     needs: test_and_build
@@ -59,6 +61,7 @@ jobs:
       - name: Build and deploy preview
         working-directory: expense-tracker
         run: |
+          ls -la public/
           npm ci
           npm run build
 

@@ -40,7 +40,9 @@ jobs:
           CI: true
 
       - name: Build application
-        run: npm run build
+        run: |
+          ls -la public/
+          npm run build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -149,6 +151,7 @@ jobs:
       - name: Build frontend for production
         working-directory: expense-tracker
         run: |
+          ls -la public/
           npm ci
           npm run build
 
