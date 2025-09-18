@@ -24,9 +24,40 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Build application
+      - name: Ensure public directory and index.html exist
+        working-directory: expense-tracker
         run: |
-          cd expense-tracker
+          pwd
+          ls -la
+          if [ ! -d "public" ]; then
+            echo "Public directory missing, creating..."
+            mkdir -p public
+          else
+            echo "Public directory exists"
+            ls -la public/
+          fi
+          if [ ! -f "public/index.html" ]; then
+            echo "index.html missing, creating..."
+            echo "<!DOCTYPE html><html><head><title>Expense Tracker</title></head><body><div id='root'></div></body></html>" > public/index.html
+          else
+            echo "index.html exists"
+          fi
+          echo "Final public directory contents:"
+          ls -la public/
+
+      - name: Build application
+        working-directory: expense-tracker
+        run: |
+          pwd
+          ls -la
+          ls -la public/
+          if [ -f "public/index.html" ]; then
+            echo "index.html found, showing first 5 lines:"
+            cat public/index.html | head -5
+          else
+            echo "ERROR: index.html still missing!"
+            exit 1
+          fi
           npm ci
           npm run build
 
@@ -128,9 +159,40 @@ jobs:
         working-directory: expense-tracker
         run: npm ci
 
-      - name: Build and analyze bundle
+      - name: Ensure public directory and index.html exist
+        working-directory: expense-tracker
         run: |
-          cd expense-tracker
+          pwd
+          ls -la
+          if [ ! -d "public" ]; then
+            echo "Public directory missing, creating..."
+            mkdir -p public
+          else
+            echo "Public directory exists"
+            ls -la public/
+          fi
+          if [ ! -f "public/index.html" ]; then
+            echo "index.html missing, creating..."
+            echo "<!DOCTYPE html><html><head><title>Expense Tracker</title></head><body><div id='root'></div></body></html>" > public/index.html
+          else
+            echo "index.html exists"
+          fi
+          echo "Final public directory contents:"
+          ls -la public/
+
+      - name: Build and analyze bundle
+        working-directory: expense-tracker
+        run: |
+          pwd
+          ls -la
+          ls -la public/
+          if [ -f "public/index.html" ]; then
+            echo "index.html found, showing first 5 lines:"
+            cat public/index.html | head -5
+          else
+            echo "ERROR: index.html still missing!"
+            exit 1
+          fi
           npm run build
           npx webpack-bundle-analyzer build/static/js/*.js --mode static --report build/bundle-report.html 2>/dev/null || echo "Bundle analysis completed"
 
