@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: '18'
 
 jobs:
   lighthouse-audit:
@@ -16,53 +16,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Ensure public directory and index.html exist
-        working-directory: expense-tracker
-        run: |
-          pwd
-          ls -la
-          if [ ! -d "public" ]; then
-            echo "Public directory missing, creating..."
-            mkdir -p public
-          else
-            echo "Public directory exists"
-            ls -la public/
-          fi
-          if [ ! -f "public/index.html" ]; then
-            echo "index.html missing, creating..."
-            echo "<!DOCTYPE html><html><head><title>Expense Tracker</title></head><body><div id='root'></div></body></html>" > public/index.html
-          else
-            echo "index.html exists"
-          fi
-          echo "Final public directory contents:"
-          ls -la public/
-
       - name: Build application
         working-directory: expense-tracker
         run: |
-          pwd
-          ls -la
-          ls -la public/
-          if [ -f "public/index.html" ]; then
-            echo "index.html found, showing first 5 lines:"
-            cat public/index.html | head -5
-          else
-            echo "ERROR: index.html still missing!"
-            exit 1
-          fi
           npm ci
           npm run build
 
       - name: Deploy to temporary hosting
-        id: firebaseHostingDeploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
@@ -81,7 +47,6 @@ jobs:
           temporaryPublicStorage: true
 
       - name: Comment performance results
-        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -132,72 +97,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Verify repository structure
-        run: |
-          pwd
-          ls -la
-          if [ -d "expense-tracker" ]; then
-            echo "✅ expense-tracker directory exists"
-            ls -la expense-tracker/
-            if [ -f "expense-tracker/package.json" ]; then
-              echo "✅ expense-tracker/package.json exists"
-            else
-              echo "❌ expense-tracker/package.json missing"
-              exit 1
-            fi
-          else
-            echo "❌ expense-tracker directory missing"
-            exit 1
-          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: expense-tracker/package-lock.json
 
       - name: Install dependencies
         working-directory: expense-tracker
         run: npm ci
 
-      - name: Ensure public directory and index.html exist
-        working-directory: expense-tracker
-        run: |
-          pwd
-          ls -la
-          if [ ! -d "public" ]; then
-            echo "Public directory missing, creating..."
-            mkdir -p public
-          else
-            echo "Public directory exists"
-            ls -la public/
-          fi
-          if [ ! -f "public/index.html" ]; then
-            echo "index.html missing, creating..."
-            echo "<!DOCTYPE html><html><head><title>Expense Tracker</title></head><body><div id='root'></div></body></html>" > public/index.html
-          else
-            echo "index.html exists"
-          fi
-          echo "Final public directory contents:"
-          ls -la public/
-
       - name: Build and analyze bundle
         working-directory: expense-tracker
         run: |
-          pwd
-          ls -la
-          ls -la public/
-          if [ -f "public/index.html" ]; then
-            echo "index.html found, showing first 5 lines:"
-            cat public/index.html | head -5
-          else
-            echo "ERROR: index.html still missing!"
-            exit 1
-          fi
           npm run build
           npx webpack-bundle-analyzer build/static/js/*.js --mode static --report build/bundle-report.html 2>/dev/null || echo "Bundle analysis completed"
 
@@ -209,8 +121,8 @@ jobs:
           retention-days: 30
 
       - name: Check bundle size
+        working-directory: expense-tracker
         run: |
-          cd expense-tracker
           echo "📦 Bundle Size Analysis:" > bundle-size.txt
           find build/static/js -name "*.js" -exec ls -lh {} \; >> bundle-size.txt
           find build/static/css -name "*.css" -exec ls -lh {} \; >> bundle-size.txt
@@ -220,5 +132,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bundle-size-report
-          path: expense-tracker/bundle-size.txt
+          path: bundle-size.txt
           retention-days: 30

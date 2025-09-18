@@ -10,102 +10,39 @@ permissions:
   issues: write
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: '18'
 
 jobs:
   test_and_build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Verify repository structure
-        run: |
-          pwd
-          ls -la
-          if [ -d "expense-tracker" ]; then
-            echo "✅ expense-tracker directory exists"
-            ls -la expense-tracker/
-            if [ -f "expense-tracker/package.json" ]; then
-              echo "✅ expense-tracker/package.json exists"
-            else
-              echo "❌ expense-tracker/package.json missing"
-              exit 1
-            fi
-          else
-            echo "❌ expense-tracker directory missing"
-            exit 1
-          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: |
-            expense-tracker/package-lock.json
-            functions/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: expense-tracker
         run: npm ci
 
-      - name: Verify package.json
-        working-directory: expense-tracker
-        run: |
-          pwd
-          ls -la
-          test -f package.json || (echo "package.json missing in $(pwd)" && exit 1)
-          cat package.json | grep -A 10 '"scripts"'
-
-      - name: Ensure public directory and index.html exist
-        working-directory: expense-tracker
-        run: |
-          pwd
-          ls -la
-          if [ ! -d "public" ]; then
-            echo "Public directory missing, creating..."
-            mkdir -p public
-          else
-            echo "Public directory exists"
-            ls -la public/
-          fi
-          if [ ! -f "public/index.html" ]; then
-            echo "index.html missing, creating..."
-            echo "<!DOCTYPE html><html><head><title>Expense Tracker</title></head><body><div id='root'></div></body></html>" > public/index.html
-          else
-            echo "index.html exists"
-          fi
-          echo "Final public directory contents:"
-          ls -la public/
-
       - name: Run linting
-        working-directory: expense-tracker
         run: npm run lint 2>/dev/null || echo "No lint script found"
 
       - name: Run tests
-        working-directory: expense-tracker
         run: npm test -- --watchAll=false --passWithNoTests
         env:
           CI: true
 
       - name: Build application
-        working-directory: expense-tracker
-        run: |
-          pwd
-          ls -la
-          ls -la public/
-          if [ -f "public/index.html" ]; then
-            echo "index.html found, showing first 5 lines:"
-            cat public/index.html | head -5
-          else
-            echo "ERROR: index.html still missing!"
-            exit 1
-          fi
-          npm run build
+        run: npm run build
 
   build_and_preview:
     needs: test_and_build
@@ -113,8 +50,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -122,39 +57,12 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Build and deploy preview
-        working-directory: expense-tracker
+        working-directory: .
         run: |
-          pwd
-          ls -la
-          ls -la public/
-          cat public/index.html | head -5
-          cat package.json | grep -A 10 '"scripts"'
           npm ci
           npm run build
 
-      - name: Ensure public directory and index.html exist (preview)
-        working-directory: expense-tracker
-        run: |
-          pwd
-          ls -la
-          if [ ! -d "public" ]; then
-            echo "Public directory missing in preview, creating..."
-            mkdir -p public
-          else
-            echo "Public directory exists"
-            ls -la public/
-          fi
-          if [ ! -f "public/index.html" ]; then
-            echo "index.html missing, creating..."
-            echo "<!DOCTYPE html><html><head><title>Expense Tracker</title></head><body><div id='root'></div></body></html>" > public/index.html
-          else
-            echo "index.html exists"
-          fi
-          echo "Final public directory contents:"
-          ls -la public/
-
-      - id: firebaseHostingDeploy
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EXPENSE_WALLET_82D9F }}

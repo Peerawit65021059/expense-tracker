@@ -23,10 +23,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '18'
 
       - name: Update frontend dependencies
-        working-directory: expense-tracker
+        working-directory: .
         run: |
           npm update
           npm audit fix --audit-level moderate
@@ -38,7 +38,7 @@ jobs:
           npm audit fix --audit-level moderate
 
       - name: Run tests after updates
-        working-directory: expense-tracker
+        working-directory: .
         run: npm test -- --watchAll=false --passWithNoTests
 
       - name: Run backend tests after updates
