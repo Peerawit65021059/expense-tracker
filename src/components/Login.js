@@ -131,9 +131,6 @@ const Login = ({ onLogin, onSwitchToRegister }) => {
               <span className="checkmark"></span>
               จดจำฉัน
             </label>
-            <button type="button" className="forgot-password">
-              ลืมรหัสผ่าน?
-            </button>
           </div>
 
           <button
@@ -152,20 +149,6 @@ const Login = ({ onLogin, onSwitchToRegister }) => {
           </button>
         </form>
 
-        <div className="auth-divider">
-          <span>or</span>
-        </div>
-
-        <div className="social-login">
-          <button className="social-button google">
-            <span className="social-icon">🌐</span>
-            เข้าสู่ระบบด้วย Google
-          </button>
-          <button className="social-button github">
-            <span className="social-icon">💻</span>
-            เข้าสู่ระบบด้วย GitHub
-          </button>
-        </div>
 
         <div className="auth-footer">
           <p>

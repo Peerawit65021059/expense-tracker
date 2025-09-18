@@ -7,16 +7,8 @@ import {
   signOut,
   onAuthStateChanged
 } from 'firebase/auth';
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  Timestamp
-} from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 // Firebase configuration
 const firebaseConfig = {
@@ -32,6 +24,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const functions = getFunctions(app);
 
 // Authentication functions
 export const loginUser = async (email, password) => {
@@ -74,16 +67,31 @@ export const onAuthStateChange = (callback) => {
   return onAuthStateChanged(auth, callback);
 };
 
-// Firestore functions
+// Get ID token for API calls
+export const getIdToken = async () => {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('No authenticated user');
+  }
+  return await user.getIdToken();
+};
+
+// API functions using Firebase Functions
 export const addTransaction = async (transaction, userId) => {
   try {
-    const docRef = await addDoc(collection(db, 'transactions'), {
+    console.log('🔄 Calling Firebase Functions API: addTransaction', transaction);
+    const idToken = await getIdToken();
+    const addTransactionFunction = httpsCallable(functions, 'addTransaction');
+
+    const result = await addTransactionFunction({
       ...transaction,
-      userId: userId || auth.currentUser?.uid,
-      timestamp: Timestamp.now()
+      userId: userId || auth.currentUser?.uid
     });
-    return { id: docRef.id, ...transaction };
+
+    console.log('✅ Transaction added successfully:', result.data.data);
+    return result.data.data;
   } catch (error) {
+    console.error('❌ Error adding transaction to backend:', error);
     throw error;
   }
 };
@@ -95,28 +103,28 @@ export const getTransactions = async (userId) => {
       return [];
     }
 
-    const q = query(
-      collection(db, 'transactions'),
-      where('userId', '==', userIdToUse),
-      orderBy('timestamp', 'desc')
-    );
+    console.log('🔄 Calling Firebase Functions API: getTransactions');
+    const idToken = await getIdToken();
+    const getTransactionsFunction = httpsCallable(functions, 'getTransactions');
 
-    const querySnapshot = await getDocs(q);
-    const transactions = [];
-    querySnapshot.forEach((doc) => {
-      transactions.push({
-        id: doc.id,
-        ...doc.data(),
-        timestamp: doc.data().timestamp?.toDate?.() || new Date(doc.data().timestamp)
-      });
-    });
+    const result = await getTransactionsFunction();
+    console.log('✅ Received response from backend:', result.data);
 
-    return transactions;
+    if (result.data.success) {
+      const transactions = result.data.data.map(transaction => ({
+        ...transaction,
+        timestamp: transaction.timestamp?.toDate ? transaction.timestamp.toDate() : new Date(transaction.timestamp)
+      }));
+      console.log('📊 Processed transactions:', transactions.length, 'items');
+      return transactions;
+    } else {
+      throw new Error(result.data.error || 'Failed to get transactions');
+    }
   } catch (error) {
-    console.error('Error getting transactions:', error);
+    console.error('❌ Error getting transactions from backend:', error);
     throw error;
   }
 };
 
 // Export Firebase instances for compatibility
-export { auth, db };
+export { auth, db, functions };
