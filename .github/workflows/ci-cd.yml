@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,7 +34,12 @@ jobs:
         run: npm ci
 
       - name: Verify package.json
-        run: cat expense-tracker/package.json | grep -A 10 '"scripts"'
+        working-directory: expense-tracker
+        run: |
+          pwd
+          ls -la
+          test -f package.json || (echo "package.json missing in $(pwd)" && exit 1)
+          cat package.json | grep -A 10 '"scripts"'
 
       - name: Ensure public directory exists
         working-directory: expense-tracker
@@ -169,6 +176,7 @@ jobs:
           fetch-depth: 0
 
       - name: Verify repository structure
+        working-directory: .
         run: |
           pwd
           ls -la
@@ -228,8 +236,8 @@ jobs:
         run: npm install -g firebase-tools
 
       - name: Build frontend for production
+        working-directory: expense-tracker
         run: |
-          cd expense-tracker
           pwd
           ls -la
           ls -la public/
@@ -237,7 +245,6 @@ jobs:
           cat package.json | grep -A 10 '"scripts"'
           npm ci
           npm run build
-        working-directory: expense-tracker
 
       - name: Ensure public directory exists (production)
         working-directory: expense-tracker

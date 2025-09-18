@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -29,6 +31,7 @@ jobs:
           npm run build
 
       - name: Deploy to temporary hosting
+        id: firebaseHostingDeploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
@@ -120,8 +123,6 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: expense-tracker/package-lock.json
-          cache: 'npm'
-          cache-dependency-path: expense-tracker/package-lock.json
 
       - name: Install dependencies
         working-directory: expense-tracker
@@ -152,5 +153,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bundle-size-report
-          path: bundle-size.txt
+          path: expense-tracker/bundle-size.txt
           retention-days: 30

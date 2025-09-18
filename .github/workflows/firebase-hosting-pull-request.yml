@@ -49,7 +49,12 @@ jobs:
         run: npm ci
 
       - name: Verify package.json
-        run: cat expense-tracker/package.json | grep -A 10 '"scripts"'
+        working-directory: expense-tracker
+        run: |
+          pwd
+          ls -la
+          test -f package.json || (echo "package.json missing in $(pwd)" && exit 1)
+          cat package.json | grep -A 10 '"scripts"'
 
       - name: Ensure public directory exists
         working-directory: expense-tracker
@@ -75,8 +80,8 @@ jobs:
           CI: true
 
       - name: Build application
+        working-directory: expense-tracker
         run: |
-          cd expense-tracker
           pwd
           ls -la
           ls -la public/
@@ -89,6 +94,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -96,8 +103,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Build and deploy preview
+        working-directory: expense-tracker
         run: |
-          cd expense-tracker
           pwd
           ls -la
           ls -la public/
@@ -105,7 +112,6 @@ jobs:
           cat package.json | grep -A 10 '"scripts"'
           npm ci
           npm run build
-        working-directory: expense-tracker
 
       - name: Ensure public directory exists (preview)
         working-directory: expense-tracker
@@ -116,7 +122,8 @@ jobs:
             echo "<!DOCTYPE html><html><head><title>Expense Tracker</title></head><body><div id='root'></div></body></html>" > public/index.html
           fi
 
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - id: firebaseHostingDeploy
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EXPENSE_WALLET_82D9F }}
