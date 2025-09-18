@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify package.json
+        run: cat package.json | grep -A 10 '"scripts"'
+
       - name: Run linting
         run: npm run lint 2>/dev/null || echo "No lint script found"
 
@@ -158,6 +161,7 @@ jobs:
           ls -la
           ls -la public/
           cat public/index.html | head -5
+          cat package.json | grep -A 10 '"scripts"'
           npm ci
           npm run build
 
