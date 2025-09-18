@@ -87,6 +87,7 @@ jobs:
           fetch-depth: 0
 
       - name: Verify repository structure
+        working-directory: .
         run: |
           pwd
           ls -la
@@ -206,6 +207,7 @@ jobs:
           fetch-depth: 0
 
       - name: Verify repository structure
+        working-directory: .
         run: |
           pwd
           ls -la
