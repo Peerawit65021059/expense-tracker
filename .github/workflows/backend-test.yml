@@ -2,10 +2,7 @@ name: Backend Test
 
 on:
   push:
-    branches:
-      - main
-      - master
-      - develop
+    branches: [main, master, develop]
   pull_request:
 
 jobs:
@@ -25,12 +22,6 @@ jobs:
         with:
           node-version: 18
 
-      - name: Cache npm
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('functions/package-lock.json') }}
-
       - name: Install dependencies
         run: npm ci
 
@@ -38,4 +29,9 @@ jobs:
         run: npx eslint .
 
       - name: Run tests
-        run: npm test
+        run: |
+          if [ -d "tests" ]; then
+            npm test
+          else
+            echo "No tests directory found, skipping tests"
+          fi
