@@ -1,0 +1,184 @@
+name: Documentation Generation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'expense-tracker/src/**'
+      - 'functions/**'
+      - 'README.md'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        working-directory: expense-tracker
+        run: npm ci
+
+      - name: Generate API Documentation
+        run: |
+          echo "# 📚 API Documentation" > API-DOCS.md
+          echo "" >> API-DOCS.md
+          echo "## Firebase Functions Endpoints" >> API-DOCS.md
+          echo "" >> API-DOCS.md
+
+          # Extract function names from index.js
+          echo "### Available Endpoints:" >> API-DOCS.md
+          grep -n "exports\." functions/index.js | sed 's/exports\.//g' | sed 's/=.*//g' | while read -r line; do
+            echo "- \`$line\`" >> API-DOCS.md
+          done
+
+          echo "" >> API-DOCS.md
+          echo "### Authentication:" >> API-DOCS.md
+          echo "- All endpoints require Bearer token authentication" >> API-DOCS.md
+          echo "- Token format: \`Authorization: Bearer <idToken>\`" >> API-DOCS.md
+          echo "" >> API-DOCS.md
+
+      - name: Generate Component Documentation
+        working-directory: expense-tracker
+        run: |
+          echo "## React Components" >> ../API-DOCS.md
+          echo "" >> ../API-DOCS.md
+
+          # List all React components
+          find src/components -name "*.js" -o -name "*.jsx" | while read -r file; do
+            component_name=$(basename "$file" .js)
+            component_name=$(basename "$component_name" .jsx)
+            echo "### $component_name" >> ../API-DOCS.md
+            echo "- **File:** \`$file\`" >> ../API-DOCS.md
+
+            # Extract props if available
+            if grep -q "propTypes\|PropTypes" "$file"; then
+              echo "- **Props:** Available" >> ../API-DOCS.md
+            else
+              echo "- **Props:** Not documented" >> ../API-DOCS.md
+            fi
+            echo "" >> ../API-DOCS.md
+          done
+
+      - name: Generate Workflow Documentation
+        run: |
+          echo "## GitHub Actions Workflows" >> API-DOCS.md
+          echo "" >> API-DOCS.md
+
+          # List all workflow files
+          ls -1 .github/workflows/*.yml | while read -r file; do
+            workflow_name=$(basename "$file" .yml)
+            echo "### $workflow_name" >> API-DOCS.md
+            echo "- **File:** \`$file\`" >> API-DOCS.md
+
+            # Extract trigger information
+            if grep -q "on:" "$file"; then
+              echo "- **Triggers:** $(grep -A 5 "on:" "$file" | grep -v "on:" | grep -v "^[[:space:]]*#" | tr '\n' ' ' | sed 's/^[[:space:]]*//')" >> API-DOCS.md
+            fi
+            echo "" >> API-DOCS.md
+          done
+
+      - name: Generate Test Coverage Report
+        working-directory: expense-tracker
+        run: |
+          echo "## Test Coverage" >> ../API-DOCS.md
+          echo "" >> ../API-DOCS.md
+
+          # Run tests with coverage
+          npm test -- --coverage --watchAll=false --passWithNoTests || true
+
+          if [ -d "coverage" ]; then
+            echo "### Coverage Summary:" >> ../API-DOCS.md
+            if [ -f "coverage/coverage-summary.json" ]; then
+              lines=$(jq '.total.lines.pct' coverage/coverage-summary.json 2>/dev/null || echo "N/A")
+              functions=$(jq '.total.functions.pct' coverage/coverage-summary.json 2>/dev/null || echo "N/A")
+              branches=$(jq '.total.branches.pct' coverage/coverage-summary.json 2>/dev/null || echo "N/A")
+              statements=$(jq '.total.statements.pct' coverage/coverage-summary.json 2>/dev/null || echo "N/A")
+
+              echo "- **Lines:** $lines%" >> ../API-DOCS.md
+              echo "- **Functions:** $functions%" >> ../API-DOCS.md
+              echo "- **Branches:** $branches%" >> ../API-DOCS.md
+              echo "- **Statements:** $statements%" >> ../API-DOCS.md
+            else
+              echo "- Coverage data not available" >> ../API-DOCS.md
+            fi
+          else
+            echo "- No coverage data generated" >> ../API-DOCS.md
+          fi
+
+      - name: Add Documentation Footer
+        run: |
+          echo "" >> API-DOCS.md
+          echo "---" >> API-DOCS.md
+          echo "" >> API-DOCS.md
+          echo "## 📊 Documentation Info" >> API-DOCS.md
+          echo "- **Generated:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> API-DOCS.md
+          echo "- **Commit:** ${{ github.sha }}" >> API-DOCS.md
+          echo "- **Branch:** ${{ github.ref_name }}" >> API-DOCS.md
+          echo "- **Generator:** GitHub Actions CI/CD Pipeline" >> API-DOCS.md
+          echo "" >> API-DOCS.md
+          echo "## 🔗 Quick Links" >> API-DOCS.md
+          echo "- [Repository](https://github.com/Peerawit65021059/expense-tracker)" >> API-DOCS.md
+          echo "- [Live Application](https://expense-wallet-82d9f.web.app)" >> API-DOCS.md
+          echo "- [API Documentation](./API-DOCS.md)" >> API-DOCS.md
+
+      - name: Upload documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-documentation
+          path: API-DOCS.md
+          retention-days: 30
+
+      - name: Comment documentation on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const docsContent = fs.readFileSync('API-DOCS.md', 'utf8');
+
+            // Create a summary comment
+            const summaryComment = `## 📚 Documentation Generated
+
+### ✅ Documentation Summary
+- **API Endpoints:** Documented
+- **React Components:** Listed
+- **GitHub Workflows:** Cataloged
+- **Test Coverage:** Generated
+
+### 📊 Key Metrics
+- **Components:** $(find expense-tracker/src/components -name "*.js" -o -name "*.jsx" | wc -l)
+- **API Endpoints:** $(grep -c "exports\." functions/index.js)
+- **Workflows:** $(ls .github/workflows/*.yml | wc -l)
+
+### 🔗 Documentation Links
+- 📁 [Full Documentation](${{ steps.upload-docs.outputs.artifact-url }})
+- 🔍 [API Endpoints](./API-DOCS.md#firebase-functions-endpoints)
+- ⚛️ [React Components](./API-DOCS.md#react-components)
+- 🔄 [CI/CD Workflows](./API-DOCS.md#github-actions-workflows)
+
+---
+🤖 *Documentation automatically generated by GitHub Actions.*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summaryComment
+            });

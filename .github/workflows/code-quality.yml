@@ -1,0 +1,153 @@
+name: Code Quality Checks
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Frontend Code Quality
+  frontend-quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: expense-tracker
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: expense-tracker/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npx eslint src/ --ext .js,.jsx,.ts,.tsx
+        continue-on-error: true
+
+      - name: Run Prettier check
+        run: npx prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,md}"
+        continue-on-error: true
+
+      - name: Check bundle size
+        run: npx bundlesize
+        continue-on-error: true
+        env:
+          BUNDLESIZE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Backend Code Quality
+  backend-quality:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: functions
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npx eslint .
+        continue-on-error: true
+
+      - name: Check for security vulnerabilities
+        run: npm audit --audit-level moderate
+        continue-on-error: true
+
+  # Dependency Updates Check
+  dependency-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Check for outdated dependencies (Frontend)
+        working-directory: expense-tracker
+        run: |
+          npm outdated || echo "No outdated dependencies found"
+        continue-on-error: true
+
+      - name: Check for outdated dependencies (Backend)
+        working-directory: functions
+        run: |
+          npm outdated || echo "No outdated dependencies found"
+        continue-on-error: true
+
+      - name: Comment on PR with dependency status
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { exec } = require('child_process');
+            const util = require('util');
+            const execAsync = util.promisify(exec);
+
+            let comment = '📦 **Dependency Check Results**\n\n';
+
+            try {
+              const { stdout: frontendOutdated } = await execAsync('cd expense-tracker && npm outdated --json 2>/dev/null || echo "{}"');
+              const frontendDeps = JSON.parse(frontendOutdated.trim() || '{}');
+
+              if (Object.keys(frontendDeps).length > 0) {
+                comment += '⚠️ **Frontend Outdated Dependencies:**\n';
+                Object.entries(frontendDeps).forEach(([pkg, info]) => {
+                  comment += `- \`${pkg}\`: ${info.current} → ${info.latest}\n`;
+                });
+              } else {
+                comment += '✅ **Frontend:** All dependencies are up to date\n';
+              }
+            } catch (error) {
+              comment += '❌ **Frontend:** Could not check dependencies\n';
+            }
+
+            try {
+              const { stdout: backendOutdated } = await execAsync('cd functions && npm outdated --json 2>/dev/null || echo "{}"');
+              const backendDeps = JSON.parse(backendOutdated.trim() || '{}');
+
+              if (Object.keys(backendDeps).length > 0) {
+                comment += '\n⚠️ **Backend Outdated Dependencies:**\n';
+                Object.entries(backendDeps).forEach(([pkg, info]) => {
+                  comment += `- \`${pkg}\`: ${info.current} → ${info.latest}\n`;
+                });
+              } else {
+                comment += '\n✅ **Backend:** All dependencies are up to date\n';
+              }
+            } catch (error) {
+              comment += '\n❌ **Backend:** Could not check dependencies\n';
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
