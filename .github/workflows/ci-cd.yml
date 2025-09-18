@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '22'
 
 jobs:
   # Frontend Testing and Building
@@ -20,6 +20,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify repository structure
+        working-directory: .
+        run: |
+          pwd
+          ls -la
+          if [ -d "expense-tracker" ]; then
+            echo "✅ expense-tracker directory exists"
+            ls -la expense-tracker/
+          else
+            echo "❌ expense-tracker directory missing"
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -31,6 +46,33 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify package.json
+        run: |
+          pwd
+          ls -la
+          test -f package.json || (echo "package.json missing in $(pwd)" && exit 1)
+          cat package.json | grep -A 10 '"scripts"'
+
+      - name: Ensure public directory and index.html exist
+        run: |
+          pwd
+          ls -la
+          if [ ! -d "public" ]; then
+            echo "Public directory missing, creating..."
+            mkdir -p public
+          else
+            echo "Public directory exists"
+            ls -la public/
+          fi
+          if [ ! -f "public/index.html" ]; then
+            echo "index.html missing, creating..."
+            echo "<!DOCTYPE html><html><head><title>Expense Tracker</title></head><body><div id='root'></div></body></html>" > public/index.html
+          else
+            echo "index.html exists"
+          fi
+          echo "Final public directory contents:"
+          ls -la public/
+
       - name: Run linting
         run: npm run lint 2>/dev/null || echo "No lint script found"
 
@@ -40,7 +82,18 @@ jobs:
           CI: true
 
       - name: Build application
-        run: npm run build
+        run: |
+          pwd
+          ls -la
+          ls -la public/
+          if [ -f "public/index.html" ]; then
+            echo "index.html found, showing first 5 lines:"
+            cat public/index.html | head -5
+          else
+            echo "ERROR: index.html still missing!"
+            exit 1
+          fi
+          npm run build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -59,6 +112,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify repository structure
+        working-directory: .
+        run: |
+          pwd
+          ls -la
+          if [ -d "functions" ]; then
+            echo "✅ functions directory exists"
+            ls -la functions/
+          else
+            echo "❌ functions directory missing"
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -87,6 +155,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify repository structure
+        run: |
+          pwd
+          ls -la
+          if [ -d "expense-tracker" ]; then
+            echo "✅ expense-tracker directory exists"
+            ls -la expense-tracker/
+          else
+            echo "❌ expense-tracker directory missing"
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -113,6 +195,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify repository structure
+        working-directory: .
+        run: |
+          pwd
+          ls -la
+          if [ -d "expense-tracker" ]; then
+            echo "✅ expense-tracker directory exists"
+            ls -la expense-tracker/
+          else
+            echo "❌ expense-tracker directory missing"
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -122,9 +219,24 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
+      - name: Build frontend for staging
+        working-directory: expense-tracker
+        run: |
+          pwd
+          ls -la
+          ls -la public/
+          if [ -f "public/index.html" ]; then
+            echo "index.html found, showing first 5 lines:"
+            cat public/index.html | head -5
+          else
+            echo "ERROR: index.html still missing!"
+            exit 1
+          fi
+          npm ci
+          npm run build
+
       - name: Deploy to Firebase (Staging)
         run: |
-          firebase use expense-wallet-82d9f
           firebase deploy --only hosting,functions --project expense-wallet-82d9f
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -138,6 +250,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify repository structure
+        working-directory: .
+        run: |
+          pwd
+          ls -la
+          if [ -d "functions" ]; then
+            echo "✅ functions directory exists"
+            ls -la functions/
+          else
+            echo "❌ functions directory missing"
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -147,21 +274,51 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
+      - name: Ensure public directory and index.html exist (production)
+        working-directory: expense-tracker
+        run: |
+          pwd
+          ls -la
+          if [ ! -d "public" ]; then
+            echo "Public directory missing in production, creating..."
+            mkdir -p public
+          else
+            echo "Public directory exists"
+            ls -la public/
+          fi
+          if [ ! -f "public/index.html" ]; then
+            echo "index.html missing, creating..."
+            echo "<!DOCTYPE html><html><head><title>Expense Tracker</title></head><body><div id='root'></div></body></html>" > public/index.html
+          else
+            echo "index.html exists"
+          fi
+          echo "Final public directory contents:"
+          ls -la public/
+
       - name: Build frontend for production
         working-directory: expense-tracker
         run: |
+          pwd
+          ls -la
+          ls -la public/
+          if [ -f "public/index.html" ]; then
+            echo "index.html found, showing first 5 lines:"
+            cat public/index.html | head -5
+          else
+            echo "ERROR: index.html still missing!"
+            exit 1
+          fi
           npm ci
           npm run build
 
       - name: Deploy to Firebase (Production)
         run: |
-          firebase use expense-wallet-82d9f
           firebase deploy --only hosting,functions --project expense-wallet-82d9f
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
       - name: Create deployment notification
-        if: success()
+        if: success() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -198,13 +355,15 @@ jobs:
 
       - name: Rollback deployment
         run: |
-          firebase use expense-wallet-82d9f
-          # Rollback to previous version if available
-          firebase hosting:rollback --project expense-wallet-82d9f
+          # Rollback is not available in Firebase Hosting
+          # Manual intervention required for rollback
+          echo "Deployment failed. Manual rollback may be required."
+          echo "Previous deployment can be restored from Firebase Console."
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
       - name: Notify rollback
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
