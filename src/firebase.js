@@ -80,7 +80,6 @@ export const getIdToken = async () => {
 export const addTransaction = async (transaction, userId) => {
   try {
     console.log('🔄 Calling Firebase Functions API: addTransaction', transaction);
-    const idToken = await getIdToken();
     const addTransactionFunction = httpsCallable(functions, 'addTransaction');
 
     const result = await addTransactionFunction({
@@ -104,7 +103,6 @@ export const getTransactions = async (userId) => {
     }
 
     console.log('🔄 Calling Firebase Functions API: getTransactions');
-    const idToken = await getIdToken();
     const getTransactionsFunction = httpsCallable(functions, 'getTransactions');
 
     const result = await getTransactionsFunction();
