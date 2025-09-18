@@ -492,7 +492,7 @@ exports.verifyToken = onRequest({
       user: {
         uid: decodedToken.uid,
         email: decodedToken.email,
-        displayName: userData?.displayName || decodedToken.name,
+        displayName: userData && userData.displayName ? userData.displayName : decodedToken.name,
         emailVerified: decodedToken.email_verified,
         lastLoginAt: userData?.lastLoginAt
       }
