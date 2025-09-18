@@ -59,8 +59,8 @@ jobs:
           CI: true
 
       - name: Build application
-        working-directory: expense-tracker
         run: |
+          cd expense-tracker
           pwd
           ls -la
           ls -la public/
@@ -80,8 +80,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Build and deploy preview
-        working-directory: expense-tracker
         run: |
+          cd expense-tracker
           pwd
           ls -la
           ls -la public/
