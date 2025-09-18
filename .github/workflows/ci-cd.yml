@@ -172,7 +172,7 @@ jobs:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
       - name: Create deployment notification
-        if: success()
+        if: success() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -217,6 +217,7 @@ jobs:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
       - name: Notify rollback
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
