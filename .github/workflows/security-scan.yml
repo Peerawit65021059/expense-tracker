@@ -14,7 +14,7 @@ permissions:
   security-events: write
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '22'
 
 jobs:
   security-scan:

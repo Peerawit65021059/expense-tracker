@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '22'
 
 jobs:
   # Frontend Testing and Building
@@ -124,7 +124,6 @@ jobs:
 
       - name: Deploy to Firebase (Staging)
         run: |
-          firebase use expense-wallet-82d9f
           firebase deploy --only hosting,functions --project expense-wallet-82d9f
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -155,7 +154,6 @@ jobs:
 
       - name: Deploy to Firebase (Production)
         run: |
-          firebase use expense-wallet-82d9f
           firebase deploy --only hosting,functions --project expense-wallet-82d9f
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -198,7 +196,6 @@ jobs:
 
       - name: Rollback deployment
         run: |
-          firebase use expense-wallet-82d9f
           # Rollback to previous version if available
           firebase hosting:rollback --project expense-wallet-82d9f
         env:

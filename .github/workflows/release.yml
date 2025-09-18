@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
 
       - name: Get release notes
         id: release-notes
@@ -107,7 +107,6 @@ jobs:
       - name: Deploy to production
         run: |
           npm install -g firebase-tools
-          firebase use expense-wallet-82d9f
           firebase deploy --only hosting,functions --project expense-wallet-82d9f
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
