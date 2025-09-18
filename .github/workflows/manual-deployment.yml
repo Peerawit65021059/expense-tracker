@@ -1,0 +1,108 @@
+name: Manual Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      skip_tests:
+        description: 'Skip automated tests'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  manual-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        working-directory: expense-tracker
+        run: npm ci
+
+      - name: Run tests (if not skipped)
+        if: ${{ !inputs.skip_tests }}
+        working-directory: expense-tracker
+        run: npm test -- --watchAll=false --passWithNoTests
+        env:
+          CI: true
+
+      - name: Build application
+        working-directory: expense-tracker
+        run: npm run build
+
+      - name: Deploy to Staging
+        if: ${{ inputs.environment == 'staging' }}
+        run: |
+          npm install -g firebase-tools
+          firebase use expense-wallet-82d9f
+          firebase deploy --only hosting,functions --project expense-wallet-82d9f
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Deploy to Production
+        if: ${{ inputs.environment == 'production' }}
+        run: |
+          npm install -g firebase-tools
+          firebase use expense-wallet-82d9f
+          firebase deploy --only hosting,functions --project expense-wallet-82d9f
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Create deployment notification
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const environment = '${{ inputs.environment }}';
+            const skipTests = '${{ inputs.skip_tests }}';
+
+            const notification = `## 🚀 Manual Deployment Completed
+
+### 📋 Deployment Details
+- **Environment:** ${environment}
+- **Tests Skipped:** ${skipTests}
+- **Commit:** ${{ github.sha }}
+- **Triggered by:** ${{ github.actor }}
+- **Time:** ${new Date().toISOString()}
+
+### ✅ Deployment Status
+- ✅ **Build:** Successful
+- ✅ **Tests:** ${skipTests === 'true' ? 'Skipped' : 'Passed'}
+- ✅ **Deploy:** Successful
+- ✅ **Environment:** ${environment}
+
+### 🔗 Access URLs
+- **Staging:** https://expense-wallet-82d9f-staging.web.app
+- **Production:** https://expense-wallet-82d9f.web.app
+
+---
+🤖 *This deployment was triggered manually via GitHub Actions.*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: notification
+            });
