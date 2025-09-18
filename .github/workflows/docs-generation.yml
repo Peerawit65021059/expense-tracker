@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, develop ]
     paths:
-      - 'expense-tracker/src/**'
+      - 'src/**'
       - 'functions/**'
       - 'README.md'
       - '.github/workflows/**'
@@ -32,7 +32,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        working-directory: expense-tracker
+        working-directory: .
         run: npm ci
 
       - name: Generate API Documentation
@@ -55,25 +55,25 @@ jobs:
           echo "" >> API-DOCS.md
 
       - name: Generate Component Documentation
-        working-directory: expense-tracker
+        working-directory: .
         run: |
-          echo "## React Components" >> ../API-DOCS.md
-          echo "" >> ../API-DOCS.md
+          echo "## React Components" >> API-DOCS.md
+          echo "" >> API-DOCS.md
 
           # List all React components
           find src/components -name "*.js" -o -name "*.jsx" | while read -r file; do
             component_name=$(basename "$file" .js)
             component_name=$(basename "$component_name" .jsx)
-            echo "### $component_name" >> ../API-DOCS.md
-            echo "- **File:** \`$file\`" >> ../API-DOCS.md
+            echo "### $component_name" >> API-DOCS.md
+            echo "- **File:** \`$file\`" >> API-DOCS.md
 
             # Extract props if available
             if grep -q "propTypes\|PropTypes" "$file"; then
-              echo "- **Props:** Available" >> ../API-DOCS.md
+              echo "- **Props:** Available" >> API-DOCS.md
             else
-              echo "- **Props:** Not documented" >> ../API-DOCS.md
+              echo "- **Props:** Not documented" >> API-DOCS.md
             fi
-            echo "" >> ../API-DOCS.md
+            echo "" >> API-DOCS.md
           done
 
       - name: Generate Workflow Documentation
@@ -95,31 +95,31 @@ jobs:
           done
 
       - name: Generate Test Coverage Report
-        working-directory: expense-tracker
+        working-directory: .
         run: |
-          echo "## Test Coverage" >> ../API-DOCS.md
-          echo "" >> ../API-DOCS.md
+          echo "## Test Coverage" >> API-DOCS.md
+          echo "" >> API-DOCS.md
 
           # Run tests with coverage
           npm test -- --coverage --watchAll=false --passWithNoTests || true
 
           if [ -d "coverage" ]; then
-            echo "### Coverage Summary:" >> ../API-DOCS.md
+            echo "### Coverage Summary:" >> API-DOCS.md
             if [ -f "coverage/coverage-summary.json" ]; then
               lines=$(jq '.total.lines.pct' coverage/coverage-summary.json 2>/dev/null || echo "N/A")
               functions=$(jq '.total.functions.pct' coverage/coverage-summary.json 2>/dev/null || echo "N/A")
               branches=$(jq '.total.branches.pct' coverage/coverage-summary.json 2>/dev/null || echo "N/A")
               statements=$(jq '.total.statements.pct' coverage/coverage-summary.json 2>/dev/null || echo "N/A")
 
-              echo "- **Lines:** $lines%" >> ../API-DOCS.md
-              echo "- **Functions:** $functions%" >> ../API-DOCS.md
-              echo "- **Branches:** $branches%" >> ../API-DOCS.md
-              echo "- **Statements:** $statements%" >> ../API-DOCS.md
+              echo "- **Lines:** $lines%" >> API-DOCS.md
+              echo "- **Functions:** $functions%" >> API-DOCS.md
+              echo "- **Branches:** $branches%" >> API-DOCS.md
+              echo "- **Statements:** $statements%" >> API-DOCS.md
             else
-              echo "- Coverage data not available" >> ../API-DOCS.md
+              echo "- Coverage data not available" >> API-DOCS.md
             fi
           else
-            echo "- No coverage data generated" >> ../API-DOCS.md
+            echo "- No coverage data generated" >> API-DOCS.md
           fi
 
       - name: Add Documentation Footer
@@ -163,7 +163,7 @@ jobs:
 - **Test Coverage:** Generated
 
 ### 📊 Key Metrics
-- **Components:** $(find expense-tracker/src/components -name "*.js" -o -name "*.jsx" | wc -l)
+- **Components:** $(find src/components -name "*.js" -o -name "*.jsx" | wc -l)
 - **API Endpoints:** $(grep -c "exports\." functions/index.js)
 - **Workflows:** $(ls .github/workflows/*.yml | wc -l)
 

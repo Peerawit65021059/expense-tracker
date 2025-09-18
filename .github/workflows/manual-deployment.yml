@@ -39,18 +39,18 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        working-directory: expense-tracker
+        working-directory: .
         run: npm ci
 
       - name: Run tests (if not skipped)
         if: ${{ !inputs.skip_tests }}
-        working-directory: expense-tracker
+        working-directory: .
         run: npm test -- --watchAll=false --passWithNoTests
         env:
           CI: true
 
       - name: Build application
-        working-directory: expense-tracker
+        working-directory: .
         run: npm run build
 
       - name: Deploy to Staging
