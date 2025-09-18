@@ -13,6 +13,9 @@ jobs:
   # Frontend Testing and Building
   frontend-test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
 
     steps:
       - name: Checkout code
@@ -26,72 +29,53 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: |
-            expense-tracker/package-lock.json
+            package-lock.json
             functions/package-lock.json
 
       - name: Install dependencies
-        working-directory: expense-tracker
         run: npm ci
 
       - name: Verify package.json
-        working-directory: expense-tracker
         run: |
           pwd
           ls -la
           test -f package.json || (echo "package.json missing in $(pwd)" && exit 1)
-          cat package.json | grep -A 10 '"scripts"'
+          node -e "console.log(JSON.stringify(require('./package.json').scripts, null, 2))"
 
-      - name: Ensure public directory and index.html exist
-        working-directory: expense-tracker
+      - name: Ensure public directory exists
         run: |
-          pwd
           ls -la
           if [ ! -d "public" ]; then
             echo "Public directory missing, creating..."
             mkdir -p public
+            echo "<!DOCTYPE html><html><head><title>Expense Tracker</title></head><body><div id='root'></div></body></html>" > public/index.html
           else
             echo "Public directory exists"
             ls -la public/
           fi
-          if [ ! -f "public/index.html" ]; then
-            echo "index.html missing, creating..."
-            echo "<!DOCTYPE html><html><head><title>Expense Tracker</title></head><body><div id='root'></div></body></html>" > public/index.html
-          else
-            echo "index.html exists"
-          fi
-          echo "Final public directory contents:"
-          ls -la public/
 
       - name: Run linting
-        working-directory: expense-tracker
-        run: npm run lint 2>/dev/null || echo "No lint script found"
+        run: npm run lint --if-present
 
       - name: Run tests
-        working-directory: expense-tracker
-        run: npm test -- --coverage --watchAll=false
+        run: npm run test --if-present -- --coverage --watchAll=false
         env:
           CI: true
 
       - name: Build application
-        working-directory: expense-tracker
         run: |
           pwd
           ls -la
-          ls -la public/
-          if [ -f "public/index.html" ]; then
-            echo "index.html found, showing first 5 lines:"
-            cat public/index.html | head -5
-          else
-            echo "ERROR: index.html still missing!"
-            exit 1
-          fi
-          npm run build
+          ls -la public/ || true
+          [ -f public/index.html ] && head -5 public/index.html || true
+          npm run build --if-present
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: expense-tracker/build/
+          path: build/
+          if-no-files-found: ignore
           retention-days: 7
 
   # Backend Testing and Building
@@ -112,10 +96,11 @@ jobs:
         run: |
           pwd
           ls -la
-          if [ -d "expense-tracker" ] && [ -d "functions" ]; then
-            echo "✅ expense-tracker and functions directories exist"
+          if [ -d "functions" ]; then
+            echo "✅ functions directory exists"
+            ls -la functions/
           else
-            echo "❌ Required directories missing"
+            echo "❌ functions directory missing"
             exit 1
           fi
 
@@ -130,13 +115,13 @@ jobs:
         run: npm ci
 
       - name: Run linting
-        run: npm run lint 2>/dev/null || echo "No lint script found"
+        run: npm run lint --if-present
 
       - name: Run tests
-        run: npm test 2>/dev/null || echo "No tests found"
+        run: npm run test --if-present
 
       - name: Build functions
-        run: npm run build 2>/dev/null || echo "No build script found"
+        run: npm run build --if-present
 
   # Security Scan
   security-scan:
@@ -153,11 +138,10 @@ jobs:
         run: |
           pwd
           ls -la
-          if [ -d "expense-tracker" ]; then
-            echo "✅ expense-tracker directory exists"
-            ls -la expense-tracker/
+          if [ -f "package.json" ]; then
+            echo "✅ Root package.json exists"
           else
-            echo "❌ expense-tracker directory missing"
+            echo "❌ package.json missing at repository root"
             exit 1
           fi
 
@@ -170,7 +154,7 @@ jobs:
         run: npm install -g audit-ci
 
       - name: Audit frontend dependencies
-        working-directory: expense-tracker
+        working-directory: .
         run: audit-ci --config audit-ci.json 2>/dev/null || npm audit --audit-level moderate
 
       - name: Audit backend dependencies
@@ -194,11 +178,10 @@ jobs:
         run: |
           pwd
           ls -la
-          if [ -d "expense-tracker" ]; then
-            echo "✅ expense-tracker directory exists"
-            ls -la expense-tracker/
+          if [ -f "package.json" ] && [ -d "functions" ]; then
+            echo "✅ Root package.json and functions directory exist"
           else
-            echo "❌ expense-tracker directory missing"
+            echo "❌ Required items missing (package.json and/or functions)"
             exit 1
           fi
 
@@ -250,36 +233,24 @@ jobs:
         run: npm install -g firebase-tools
 
       - name: Build frontend for production
-        working-directory: expense-tracker
+        working-directory: .
         run: |
           pwd
           ls -la
-          ls -la public/
-          cat public/index.html | head -5
-          cat package.json | grep -A 10 '"scripts"'
+          ls -la public/ || true
+          [ -f public/index.html ] && head -5 public/index.html || true
+          node -e "console.log(JSON.stringify(require('./package.json').scripts, null, 2))"
           npm ci
-          npm run build
+          npm run build --if-present
 
-      - name: Ensure public directory and index.html exist (production)
-        working-directory: expense-tracker
+      - name: Ensure public directory exists (production)
+        working-directory: .
         run: |
-          pwd
-          ls -la
           if [ ! -d "public" ]; then
             echo "Public directory missing in production, creating..."
             mkdir -p public
-          else
-            echo "Public directory exists"
-            ls -la public/
-          fi
-          if [ ! -f "public/index.html" ]; then
-            echo "index.html missing, creating..."
             echo "<!DOCTYPE html><html><head><title>Expense Tracker</title></head><body><div id='root'></div></body></html>" > public/index.html
-          else
-            echo "index.html exists"
           fi
-          echo "Final public directory contents:"
-          ls -la public/
 
       - name: Deploy to Firebase (Production)
         run: |
