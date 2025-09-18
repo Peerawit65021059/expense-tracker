@@ -24,13 +24,18 @@ jobs:
           fetch-depth: 0
 
       - name: Verify repository structure
-        working-directory: .
         run: |
           pwd
           ls -la
           if [ -d "expense-tracker" ]; then
             echo "✅ expense-tracker directory exists"
             ls -la expense-tracker/
+            if [ -f "expense-tracker/package.json" ]; then
+              echo "✅ expense-tracker/package.json exists"
+            else
+              echo "❌ expense-tracker/package.json missing"
+              exit 1
+            fi
           else
             echo "❌ expense-tracker directory missing"
             exit 1
@@ -50,8 +55,15 @@ jobs:
         run: |
           pwd
           ls -la
-          test -f package.json || (echo "package.json missing in $(pwd)" && exit 1)
-          cat package.json | grep -A 10 '"scripts"'
+          if [ -f "package.json" ]; then
+            echo "✅ package.json found"
+            cat package.json | grep -A 10 '"scripts"'
+          else
+            echo "❌ package.json missing in $(pwd)"
+            echo "Contents of current directory:"
+            ls -la
+            exit 1
+          fi
 
       - name: Ensure public directory and index.html exist
         run: |
@@ -116,13 +128,18 @@ jobs:
           fetch-depth: 0
 
       - name: Verify repository structure
-        working-directory: .
         run: |
           pwd
           ls -la
           if [ -d "functions" ]; then
             echo "✅ functions directory exists"
             ls -la functions/
+            if [ -f "functions/package.json" ]; then
+              echo "✅ functions/package.json exists"
+            else
+              echo "❌ functions/package.json missing"
+              exit 1
+            fi
           else
             echo "❌ functions directory missing"
             exit 1
@@ -165,6 +182,12 @@ jobs:
           if [ -d "expense-tracker" ]; then
             echo "✅ expense-tracker directory exists"
             ls -la expense-tracker/
+            if [ -f "expense-tracker/package.json" ]; then
+              echo "✅ expense-tracker/package.json exists"
+            else
+              echo "❌ expense-tracker/package.json missing"
+              exit 1
+            fi
           else
             echo "❌ expense-tracker directory missing"
             exit 1
@@ -199,13 +222,18 @@ jobs:
           fetch-depth: 0
 
       - name: Verify repository structure
-        working-directory: .
         run: |
           pwd
           ls -la
           if [ -d "expense-tracker" ]; then
             echo "✅ expense-tracker directory exists"
             ls -la expense-tracker/
+            if [ -f "expense-tracker/package.json" ]; then
+              echo "✅ expense-tracker/package.json exists"
+            else
+              echo "❌ expense-tracker/package.json missing"
+              exit 1
+            fi
           else
             echo "❌ expense-tracker directory missing"
             exit 1
@@ -254,13 +282,18 @@ jobs:
           fetch-depth: 0
 
       - name: Verify repository structure
-        working-directory: .
         run: |
           pwd
           ls -la
           if [ -d "functions" ]; then
             echo "✅ functions directory exists"
             ls -la functions/
+            if [ -f "functions/package.json" ]; then
+              echo "✅ functions/package.json exists"
+            else
+              echo "❌ functions/package.json missing"
+              exit 1
+            fi
           else
             echo "❌ functions directory missing"
             exit 1

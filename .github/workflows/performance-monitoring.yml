@@ -136,13 +136,18 @@ jobs:
           fetch-depth: 0
 
       - name: Verify repository structure
-        working-directory: .
         run: |
           pwd
           ls -la
           if [ -d "expense-tracker" ]; then
             echo "✅ expense-tracker directory exists"
             ls -la expense-tracker/
+            if [ -f "expense-tracker/package.json" ]; then
+              echo "✅ expense-tracker/package.json exists"
+            else
+              echo "❌ expense-tracker/package.json missing"
+              exit 1
+            fi
           else
             echo "❌ expense-tracker directory missing"
             exit 1
