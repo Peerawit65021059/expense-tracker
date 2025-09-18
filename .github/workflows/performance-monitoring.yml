@@ -45,7 +45,7 @@ jobs:
             ${{ steps.firebaseHostingDeploy.outputs.details_url }}
           configPath: .lighthouserc.json
           uploadArtifacts: true
-          artifactName: lighthouse_results
+          artifactName: lighthouse
           temporaryPublicStorage: true
 
       - name: Comment performance results
