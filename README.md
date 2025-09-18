@@ -1,6 +1,34 @@
-# Getting Started with Create React App
+# Expense Tracker App
+
+A modern expense tracking application built with React, Firebase, and comprehensive CI/CD pipeline.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+## 🚀 CI/CD Pipeline
+
+This project includes a comprehensive CI/CD pipeline with automated testing, deployment, and monitoring:
+
+- **Automated Testing:** Runs on every push and pull request
+- **Code Quality:** ESLint and Prettier checks
+- **Security Scanning:** Automated dependency vulnerability detection
+- **Multi-Environment Deployment:** Staging and production environments
+- **Performance Monitoring:** Lighthouse audits and bundle analysis
+- **Automated Releases:** GitHub releases with build artifacts
+
+### Workflow Triggers:
+- **Push to `main`:** Production deployment
+- **Push to `develop`:** Staging deployment
+- **Pull Requests:** Testing and preview deployment
+- **Weekly:** Automated dependency updates
+- **Version Tags:** Release creation
+
+### CI/CD Status:
+- ✅ **Frontend Testing:** Automated unit tests
+- ✅ **Backend Testing:** API endpoint validation
+- ✅ **Security Scanning:** Dependency vulnerability checks
+- ✅ **Build Verification:** Production build testing
+- ✅ **Deployment:** Automated Firebase deployment
+- ✅ **Monitoring:** Performance and bundle analysis
 
 ## Available Scripts
 
