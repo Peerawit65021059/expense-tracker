@@ -43,7 +43,10 @@ jobs:
 
       - name: Build application
         run: |
+          pwd
+          ls -la
           ls -la public/
+          cat public/index.html | head -5
           npm run build
 
   build_and_preview:
@@ -61,7 +64,10 @@ jobs:
       - name: Build and deploy preview
         working-directory: expense-tracker
         run: |
+          pwd
+          ls -la
           ls -la public/
+          cat public/index.html | head -5
           npm ci
           npm run build
 

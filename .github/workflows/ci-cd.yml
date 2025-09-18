@@ -41,7 +41,10 @@ jobs:
 
       - name: Build application
         run: |
+          pwd
+          ls -la
           ls -la public/
+          cat public/index.html | head -5
           npm run build
 
       - name: Upload build artifacts
@@ -151,7 +154,10 @@ jobs:
       - name: Build frontend for production
         working-directory: expense-tracker
         run: |
+          pwd
+          ls -la
           ls -la public/
+          cat public/index.html | head -5
           npm ci
           npm run build
 
