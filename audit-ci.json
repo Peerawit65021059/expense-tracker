@@ -1,9 +1,8 @@
 {
   "moderate": true,
   "allowlist": [
-    "GHSA-42xw-2xvc-qx8m",
-    "GHSA-c2qf-rxjj-qqgw",
-    "GHSA-4w2v-q235-vp99"
+    "GHSA-9jgg-88mc-972h",
+    "GHSA-4v9v-hfq4-rm2v"
   ],
   "path-allowlist": [
     "/test/",
