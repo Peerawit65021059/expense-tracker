@@ -22,6 +22,12 @@ jobs:
         with:
           node-version: 18
 
+      - name: Cache npm
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('functions/package-lock.json') }}
+
       - name: Install dependencies
         run: npm ci
 
@@ -29,9 +35,4 @@ jobs:
         run: npx eslint .
 
       - name: Run tests
-        run: |
-          if [ -d "tests" ]; then
-            npm test
-          else
-            echo "No tests directory found, skipping tests"
-          fi
+        run: npm test
