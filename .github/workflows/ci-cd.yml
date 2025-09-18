@@ -32,8 +32,7 @@ jobs:
         run: npm ci
 
       - name: Verify package.json
-        working-directory: expense-tracker
-        run: cat package.json | grep -A 10 '"scripts"'
+        run: cat expense-tracker/package.json | grep -A 10 '"scripts"'
 
       - name: Ensure public directory exists
         working-directory: expense-tracker
@@ -181,6 +180,7 @@ jobs:
           cat package.json | grep -A 10 '"scripts"'
           npm ci
           npm run build
+        working-directory: expense-tracker
 
       - name: Ensure public directory exists (production)
         working-directory: expense-tracker
