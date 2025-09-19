@@ -44,8 +44,7 @@ jobs:
           urls: |
             ${{ steps.firebaseHostingDeploy.outputs.details_url }}
           configPath: .lighthouserc.json
-          uploadArtifacts: true
-          artifactName: lighthouse
+          uploadArtifacts: false
           temporaryPublicStorage: true
 
       - name: Comment performance results
@@ -84,7 +83,7 @@ jobs:
             }
 
             performanceComment += '---\n';
-            performanceComment += '*Performance audit completed. Results are also available as workflow artifacts.*';
+            performanceComment += '*Performance audit completed. Results are available in temporary public storage.*';
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
