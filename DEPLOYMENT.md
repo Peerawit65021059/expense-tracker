@@ -50,9 +50,31 @@ REACT_APP_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
 
 ### Troubleshooting
 
-1. **Login Issues**: Ensure Firebase configuration is correct and user has proper permissions
-2. **Deployment Failures**: Check that all GitHub secrets are set correctly
-3. **Environment Variables**: Make sure REACT_APP_ variables are available during build
+1. **Authentication Error "Failed to authenticate, have you run firebase login?"**:
+   - The `FIREBASE_TOKEN` secret is missing or invalid
+   - Follow these steps to fix:
+
+     **Step 1: Generate Firebase CI Token**
+     ```bash
+     # Make sure you're logged in to Firebase
+     firebase login
+
+     # Generate a CI token
+     firebase login:ci
+     ```
+     This will output a long token string - copy it.
+
+     **Step 2: Add to GitHub Secrets**
+     - Go to your GitHub repository
+     - Settings → Secrets and variables → Actions
+     - Click "New repository secret"
+     - Name: `FIREBASE_TOKEN`
+     - Value: Paste the token from Step 1
+     - Click "Add secret"
+
+2. **Login Issues**: Ensure Firebase configuration is correct and user has proper permissions
+3. **Deployment Failures**: Check that all GitHub secrets are set correctly
+4. **Environment Variables**: Make sure REACT_APP_ variables are available during build
 
 ### Firebase Project Setup
 
@@ -61,3 +83,30 @@ Ensure your Firebase project has:
 - Firestore database created
 - Hosting configured
 - Functions enabled (if using Firebase Functions)
+
+### Verifying Firebase CI Token Permissions
+
+After generating the CI token, ensure the associated Firebase account has:
+
+1. **Project Editor** or **Owner** role in the Firebase project
+2. **Access to deploy** to Hosting, Functions, and Firestore
+3. **Billing enabled** (required for Functions deployment)
+
+To check permissions:
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Select your project
+3. Go to Project Settings → Users and permissions
+4. Ensure your account has the necessary roles
+
+### Testing the Token Locally
+
+Before pushing to GitHub, test the token locally:
+
+```bash
+# Set the token as an environment variable
+export FIREBASE_TOKEN=your_token_here
+
+# Try a deployment command
+firebase use expense-wallet-82d9f
+firebase deploy --only hosting --project expense-wallet-82d9f
+```
