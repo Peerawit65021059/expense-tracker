@@ -122,13 +122,23 @@ jobs:
         working-directory: .
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Download frontend build artifacts
         uses: actions/download-artifact@v4
         with:
           name: frontend-build
           path: build/
 
-      - name: Checkout code
+      - name: Verify build directory
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Contents of current directory:"
+          ls -la
+          echo "Contents of build directory:"
+          ls -la build/ || echo "Build directory not found"
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -170,13 +180,23 @@ jobs:
         working-directory: .
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Download frontend build artifacts
         uses: actions/download-artifact@v4
         with:
           name: frontend-build
           path: build/
 
-      - name: Checkout code
+      - name: Verify build directory
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Contents of current directory:"
+          ls -la
+          echo "Contents of build directory:"
+          ls -la build/ || echo "Build directory not found"
         uses: actions/checkout@v4
 
       - name: Setup Node.js
