@@ -116,7 +116,7 @@ jobs:
           firebase deploy --only hosting --project expense-wallet-82d9f
 
       - name: Create deployment notification
-        if: success()
+        if: success() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -158,6 +158,7 @@ jobs:
           firebase hosting:rollback --project expense-wallet-82d9f || echo "⚠️ Hosting rollback failed or not available"
 
       - name: Notify rollback
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -203,6 +204,7 @@ jobs:
           firebase hosting:rollback --project expense-wallet-82d9f || echo "⚠️ Hosting rollback failed or not available"
 
       - name: Notify staging rollback
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
