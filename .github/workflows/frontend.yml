@@ -151,6 +151,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Rollback Firebase Hosting
+        working-directory: .
         run: |
           firebase use expense-wallet-82d9f
           echo "🔄 Attempting to rollback Firebase Hosting to previous version..."
@@ -195,6 +196,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Rollback Firebase Hosting (Staging)
+        working-directory: .
         run: |
           firebase use expense-wallet-82d9f
           echo "🔄 Attempting to rollback Firebase Hosting (Staging) to previous version..."

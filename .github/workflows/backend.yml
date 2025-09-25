@@ -96,6 +96,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Deploy to Firebase (Staging)
+        working-directory: .
         run: |
           firebase use expense-wallet-82d9f
           firebase deploy --only functions,firestore --project expense-wallet-82d9f
@@ -126,6 +127,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Deploy to Firebase (Production)
+        working-directory: .
         run: |
           firebase use expense-wallet-82d9f
           firebase deploy --only functions,firestore --project expense-wallet-82d9f
@@ -166,6 +168,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Attempt Firestore rollback
+        working-directory: .
         run: |
           firebase use expense-wallet-82d9f
           echo "🔄 Attempting to rollback Firestore rules/indexes..."
@@ -215,6 +218,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Attempt Firestore rollback (Staging)
+        working-directory: .
         run: |
           firebase use expense-wallet-82d9f
           echo "🔄 Attempting to rollback Firestore rules/indexes (Staging)..."
