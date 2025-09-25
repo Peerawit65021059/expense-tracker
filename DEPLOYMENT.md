@@ -110,3 +110,18 @@ export FIREBASE_TOKEN=your_token_here
 firebase use expense-wallet-82d9f
 firebase deploy --only hosting --project expense-wallet-82d9f
 ```
+
+### Alternative: Using Firebase Service Account (If CI Token Doesn't Work)
+
+If the CI token approach doesn't work, you can use a Firebase service account:
+
+1. **Create Service Account Key:**
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Project Settings → Service accounts → Firebase Admin SDK
+   - Click "Generate new private key" → Download JSON file
+
+2. **Add to GitHub Secrets:**
+   - Name: `FIREBASE_SERVICE_ACCOUNT`
+   - Value: The entire JSON content from the downloaded file
+
+3. **Update Workflows:** The workflows would need to be modified to use service account authentication instead of CI token.
