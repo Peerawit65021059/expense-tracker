@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./functions:/app/functions
+      - ./firebase.json:/app/firebase.json
+      - ./.firebaserc:/app/.firebaserc
+    environment:
+      - FIREBASE_PROJECT=expense-wallet-82d9f
