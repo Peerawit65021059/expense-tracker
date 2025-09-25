@@ -111,17 +111,31 @@ firebase use expense-wallet-82d9f
 firebase deploy --only hosting --project expense-wallet-82d9f
 ```
 
-### Alternative: Using Firebase Service Account (If CI Token Doesn't Work)
+### 🚨 CRITICAL: If CI Token Still Doesn't Work
 
-If the CI token approach doesn't work, you can use a Firebase service account:
+**Use Firebase Service Account Instead (Most Reliable):**
 
-1. **Create Service Account Key:**
-   - Go to [Firebase Console](https://console.firebase.google.com/)
-   - Project Settings → Service accounts → Firebase Admin SDK
-   - Click "Generate new private key" → Download JSON file
+#### **Step 1: Create Service Account Key**
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Select project `expense-wallet-82d9f`
+3. Click **Project Settings** (⚙️ gear icon)
+4. Go to **Service accounts** tab
+5. Under **Firebase Admin SDK**, click **"Generate new private key"**
+6. Download the JSON file
 
-2. **Add to GitHub Secrets:**
+#### **Step 2: Add to GitHub Secrets**
+1. Go to GitHub → Repository → Settings → Secrets and variables → Actions
+2. Create **TWO** secrets:
+
+   **Secret 1:**
    - Name: `FIREBASE_SERVICE_ACCOUNT`
-   - Value: The entire JSON content from the downloaded file
+   - Value: Entire JSON content from downloaded file
 
-3. **Update Workflows:** The workflows would need to be modified to use service account authentication instead of CI token.
+   **Secret 2:**
+   - Name: `FIREBASE_SERVICE_ACCOUNT_EXPENSE_WALLET_82D9F`
+   - Value: **Same JSON content** (for PR previews)
+
+#### **Step 3: Update Workflows to Use Service Account**
+The workflows need to be modified to use service account authentication instead of CI tokens.
+
+**Would you like me to update the workflows to use service account authentication instead?**

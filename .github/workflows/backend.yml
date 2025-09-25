@@ -87,12 +87,18 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
+      - name: Authenticate to Firebase
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
       - name: Deploy to Firebase (Staging)
         run: |
           firebase use expense-wallet-82d9f
           firebase deploy --only functions,firestore --project expense-wallet-82d9f
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
   deploy-production:
     runs-on: ubuntu-latest
@@ -111,12 +117,18 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
+      - name: Authenticate to Firebase
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
       - name: Deploy to Firebase (Production)
         run: |
           firebase use expense-wallet-82d9f
           firebase deploy --only functions,firestore --project expense-wallet-82d9f
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
       - name: Create deployment notification
         if: success()
@@ -145,6 +157,14 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
+      - name: Authenticate to Firebase
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
       - name: Attempt Firestore rollback
         run: |
           firebase use expense-wallet-82d9f
@@ -153,8 +173,6 @@ jobs:
           # This is mainly for notification purposes
           echo "⚠️ Firebase Functions and Firestore do not support automatic rollback"
           echo "Manual intervention required for Functions redeployment"
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
       - name: Notify rollback
         uses: actions/github-script@v7
@@ -188,6 +206,14 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
+      - name: Authenticate to Firebase
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
       - name: Attempt Firestore rollback (Staging)
         run: |
           firebase use expense-wallet-82d9f
@@ -196,8 +222,6 @@ jobs:
           # This is mainly for notification purposes
           echo "⚠️ Firebase Functions and Firestore do not support automatic rollback"
           echo "Manual intervention required for Functions redeployment"
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
       - name: Notify staging rollback
         uses: actions/github-script@v7
