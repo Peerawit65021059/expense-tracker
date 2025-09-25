@@ -133,7 +133,6 @@ jobs:
       - name: Rollback Firebase Hosting
         working-directory: .
         run: |
-          firebase use expense-wallet-82d9f
           echo "🔄 Attempting to rollback Firebase Hosting to previous version..."
           firebase hosting:rollback --project expense-wallet-82d9f || echo "⚠️ Hosting rollback failed or not available"
         env:
@@ -173,7 +172,6 @@ jobs:
       - name: Rollback Firebase Hosting (Staging)
         working-directory: .
         run: |
-          firebase use expense-wallet-82d9f
           echo "🔄 Attempting to rollback Firebase Hosting (Staging) to previous version..."
           firebase hosting:rollback --project expense-wallet-82d9f || echo "⚠️ Hosting rollback failed or not available"
         env:

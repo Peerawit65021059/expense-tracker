@@ -100,13 +100,13 @@ jobs:
         run: |
           pwd
           ls -la
-          cat .firebaserc
-          cat firebase.json
+          cat .firebaserc || echo "Warning: .firebaserc not found"
+          cat firebase.json || echo "Warning: firebase.json not found"
 
       - name: Deploy to Firebase (Staging)
         run: |
           pwd
-          firebase use expense-wallet-82d9f
+          ls -la .firebaserc firebase.json || echo "Config files missing, using direct project ID"
           firebase deploy --only functions,firestore --project expense-wallet-82d9f --force
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -141,13 +141,13 @@ jobs:
         run: |
           pwd
           ls -la
-          cat .firebaserc
-          cat firebase.json
+          cat .firebaserc || echo "Warning: .firebaserc not found"
+          cat firebase.json || echo "Warning: firebase.json not found"
 
       - name: Deploy to Firebase (Production)
         run: |
           pwd
-          firebase use expense-wallet-82d9f
+          ls -la .firebaserc firebase.json || echo "Config files missing, using direct project ID"
           firebase deploy --only functions,firestore --project expense-wallet-82d9f --force
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -182,7 +182,6 @@ jobs:
       - name: Attempt Firestore rollback
         working-directory: .
         run: |
-          firebase use expense-wallet-82d9f
           echo "🔄 Attempting to rollback Firestore rules/indexes..."
           # Note: Firebase doesn't support direct rollback of Functions or Firestore
           # This is mainly for notification purposes
@@ -227,7 +226,6 @@ jobs:
       - name: Attempt Firestore rollback (Staging)
         working-directory: .
         run: |
-          firebase use expense-wallet-82d9f
           echo "🔄 Attempting to rollback Firestore rules/indexes (Staging)..."
           # Note: Firebase doesn't support direct rollback of Functions or Firestore
           # This is mainly for notification purposes

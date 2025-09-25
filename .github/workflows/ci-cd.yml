@@ -149,13 +149,13 @@ jobs:
         run: |
           pwd
           ls -la
-          cat .firebaserc
-          cat firebase.json
+          cat .firebaserc || echo "Warning: .firebaserc not found"
+          cat firebase.json || echo "Warning: firebase.json not found"
 
       - name: Deploy to Firebase (Staging)
         run: |
           pwd
-          firebase use expense-wallet-82d9f
+          ls -la .firebaserc firebase.json || echo "Config files missing, using direct project ID"
           firebase deploy --only hosting,functions --project expense-wallet-82d9f --force
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -197,13 +197,13 @@ jobs:
         run: |
           pwd
           ls -la
-          cat .firebaserc
-          cat firebase.json
+          cat .firebaserc || echo "Warning: .firebaserc not found"
+          cat firebase.json || echo "Warning: firebase.json not found"
 
       - name: Deploy to Firebase (Production)
         run: |
           pwd
-          firebase use expense-wallet-82d9f
+          ls -la .firebaserc firebase.json || echo "Config files missing, using direct project ID"
           firebase deploy --only hosting,functions --project expense-wallet-82d9f --force
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -239,7 +239,6 @@ jobs:
       - name: Rollback Firebase Hosting
         working-directory: .
         run: |
-          firebase use expense-wallet-82d9f
           echo "🔄 Attempting to rollback Firebase Hosting to previous version..."
           firebase hosting:rollback --project expense-wallet-82d9f || echo "⚠️ Hosting rollback failed or not available"
         env:
@@ -282,7 +281,6 @@ jobs:
       - name: Rollback Firebase Hosting (Staging)
         working-directory: .
         run: |
-          firebase use expense-wallet-82d9f
           echo "🔄 Attempting to rollback Firebase Hosting (Staging) to previous version..."
           firebase hosting:rollback --project expense-wallet-82d9f || echo "⚠️ Hosting rollback failed or not available"
         env:
