@@ -115,7 +115,7 @@ jobs:
         run: |
           pwd
           firebase use expense-wallet-82d9f
-          firebase deploy --only functions,firestore --project expense-wallet-82d9f
+          firebase deploy --only functions,firestore --project expense-wallet-82d9f --force
 
   deploy-production:
     runs-on: ubuntu-latest
@@ -162,7 +162,7 @@ jobs:
         run: |
           pwd
           firebase use expense-wallet-82d9f
-          firebase deploy --only functions,firestore --project expense-wallet-82d9f
+          firebase deploy --only functions,firestore --project expense-wallet-82d9f --force
 
       - name: Create deployment notification
         if: success()
