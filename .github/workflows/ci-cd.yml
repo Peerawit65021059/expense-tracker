@@ -145,8 +145,16 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Verify Firebase project files
+        run: |
+          pwd
+          ls -la
+          cat .firebaserc
+          cat firebase.json
+
       - name: Deploy to Firebase (Staging)
         run: |
+          pwd
           firebase use expense-wallet-82d9f
           firebase deploy --only hosting,functions --project expense-wallet-82d9f
 
@@ -191,8 +199,16 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Verify Firebase project files
+        run: |
+          pwd
+          ls -la
+          cat .firebaserc
+          cat firebase.json
+
       - name: Deploy to Firebase (Production)
         run: |
+          pwd
           firebase use expense-wallet-82d9f
           firebase deploy --only hosting,functions --project expense-wallet-82d9f
 
