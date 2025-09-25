@@ -109,6 +109,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [frontend-test, backend-test, security-scan]
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    defaults:
+      run:
+        working-directory: .
 
     steps:
       - name: Download frontend build artifacts
@@ -143,7 +146,6 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Deploy to Firebase (Staging)
-        working-directory: .
         run: |
           firebase use expense-wallet-82d9f
           firebase deploy --only hosting,functions --project expense-wallet-82d9f
@@ -153,6 +155,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [frontend-test, backend-test, security-scan]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    defaults:
+      run:
+        working-directory: .
 
     steps:
       - name: Download frontend build artifacts
@@ -187,7 +192,6 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Deploy to Firebase (Production)
-        working-directory: .
         run: |
           firebase use expense-wallet-82d9f
           firebase deploy --only hosting,functions --project expense-wallet-82d9f
