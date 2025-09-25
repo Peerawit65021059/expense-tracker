@@ -185,22 +185,14 @@ jobs:
     if: failure() && github.ref == 'refs/heads/main'
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      - name: Rollback deployment
+      - name: Rollback Firebase Hosting
         run: |
           firebase use expense-wallet-82d9f
-          # Rollback to previous version if available
-          firebase hosting:rollback --project expense-wallet-82d9f
+          echo "🔄 Attempting to rollback Firebase Hosting to previous version..."
+          firebase hosting:rollback --project expense-wallet-82d9f || echo "⚠️ Hosting rollback failed or not available"
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
@@ -212,11 +204,57 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '⚠️ **Deployment Failed - Rollback Initiated**\n\n' +
-                    '🔄 The system has been rolled back to the previous stable version.\n\n' +
+              body: '⚠️ **Production Deployment Failed - Partial Rollback Completed**\n\n' +
+                    '🔄 **What was rolled back:**\n' +
+                    '- Firebase Hosting (if previous version available)\n' +
+                    '- Firebase Functions: Manual redeployment required\n\n' +
                     '📋 **Failure Details:**\n' +
                     '- **Commit:** ${{ github.sha }}\n' +
                     '- **Branch:** ${{ github.ref_name }}\n' +
                     '- **Triggered by:** ${{ github.actor }}\n\n' +
-                    '🔍 Please check the workflow logs for detailed error information.'
+                    '🔧 **Next Steps:**\n' +
+                    '1. Check workflow logs for detailed error information\n' +
+                    '2. Fix the issues in the codebase\n' +
+                    '3. Push the fixes to trigger a new deployment\n' +
+                    '4. If Functions need rollback, redeploy from a previous working commit'
+            })
+
+  # Rollback staging on failure
+  rollback-staging:
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: failure() && github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Rollback Firebase Hosting (Staging)
+        run: |
+          firebase use expense-wallet-82d9f
+          echo "🔄 Attempting to rollback Firebase Hosting (Staging) to previous version..."
+          firebase hosting:rollback --project expense-wallet-82d9f || echo "⚠️ Hosting rollback failed or not available"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Notify staging rollback
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ **Staging Deployment Failed - Partial Rollback Completed**\n\n' +
+                    '🔄 **What was rolled back:**\n' +
+                    '- Firebase Hosting (Staging) (if previous version available)\n' +
+                    '- Firebase Functions: Manual redeployment required\n\n' +
+                    '📋 **Failure Details:**\n' +
+                    '- **Commit:** ${{ github.sha }}\n' +
+                    '- **Branch:** develop\n' +
+                    '- **Triggered by:** ${{ github.actor }}\n\n' +
+                    '🔧 **Next Steps:**\n' +
+                    '1. Check workflow logs for detailed error information\n' +
+                    '2. Fix the issues in the develop branch\n' +
+                    '3. Push the fixes to trigger a new deployment'
             })
