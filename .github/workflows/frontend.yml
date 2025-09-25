@@ -158,3 +158,41 @@ jobs:
                     '2. Fix the issues in the frontend code\n' +
                     '3. Push the fixes to trigger a new deployment'
             })
+
+  rollback-staging:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: failure() && github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Rollback Firebase Hosting (Staging)
+        run: |
+          firebase use expense-wallet-82d9f
+          echo "🔄 Attempting to rollback Firebase Hosting (Staging) to previous version..."
+          firebase hosting:rollback --project expense-wallet-82d9f || echo "⚠️ Hosting rollback failed or not available"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Notify staging rollback
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ **Frontend Staging Deployment Failed - Hosting Rollback Completed**\n\n' +
+                    '🔄 **What was rolled back:**\n' +
+                    '- Firebase Hosting (Staging) (if previous version available)\n\n' +
+                    '📋 **Failure Details:**\n' +
+                    '- **Commit:** ${{ github.sha }}\n' +
+                    '- **Branch:** develop\n' +
+                    '- **Triggered by:** ${{ github.actor }}\n\n' +
+                    '🔧 **Next Steps:**\n' +
+                    '1. Check workflow logs for detailed error information\n' +
+                    '2. Fix the issues in the develop branch\n' +
+                    '3. Push the fixes to trigger a new deployment'
+            })
